@@ -5,6 +5,7 @@ Supports portable packaging and persistent data storage in %LOCALAPPDATA%\\SKY C
 import os
 import sys
 import logging
+import secrets
 from typing import List
 
 APP_NAME = "SKY Cafe POS"
@@ -15,6 +16,11 @@ class AppSettings:
     PROJECT_VERSION: str = APP_VERSION
     API_V1_STR: str = "/api"
     CORS_ORIGINS: List[str] = ["*"]
+
+    # JWT Authentication
+    SECRET_KEY: str = os.getenv("SKY_CAFE_SECRET_KEY", secrets.token_hex(32))
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8-hour shift
 
 settings = AppSettings()
 
