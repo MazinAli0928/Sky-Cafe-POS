@@ -37,8 +37,8 @@ if not exist "backend\cafe_pos.db" (
 )
 
 :: 4. Start FastAPI Backend Server
-echo [1/3] Starting FastAPI Backend Server on http://localhost:8000 ...
-start "Cafe POS Backend API" cmd /k "cd /d %~dp0backend && uvicorn app.main:app --reload --port 8000"
+echo [1/3] Starting FastAPI Backend Server on http://localhost:8080 ...
+start "Cafe POS Backend API" cmd /k "cd /d %~dp0backend && uvicorn app.main:app --reload --port 8080"
 
 :: 5. Start Vite Frontend Server
 echo [2/3] Starting Vite Frontend Server on http://localhost:5173 ...
@@ -55,8 +55,8 @@ echo.
 echo ===================================================
 echo CAFE POS IS NOW RUNNING!
 echo - Frontend: http://localhost:5173
-echo - Backend API: http://localhost:8000
-echo - Swagger Docs: http://localhost:8000/docs
+echo - Backend API: http://localhost:8080
+echo - Swagger Docs: http://localhost:8080/docs
 echo.
 echo Leave the server windows open while using the application.
 echo ===================================================

@@ -27,5 +27,7 @@ class CafeSettings(Base):
     printer_enabled = Column(Boolean, nullable=False, default=True)
     printer_connection_type = Column(String(50), nullable=False, default="bluetooth_spp")
     printer_name = Column(String(100), nullable=False, default="CIE-DYNO-2F64")
+    table_count = Column(Integer, nullable=False, default=12)
+    table_prefix = Column(String(20), nullable=False, default="T-")
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

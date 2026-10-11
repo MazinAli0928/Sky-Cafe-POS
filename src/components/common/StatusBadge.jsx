@@ -5,6 +5,7 @@ const StatusBadge = ({ status }) => {
     Available: "bg-emerald-50 text-emerald-700 border-emerald-200",
     "Out of Stock": "bg-rose-50 text-rose-700 border-rose-200",
     Paid: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    Cancelled: "bg-rose-50 text-rose-700 border-rose-200",
     Refunded: "bg-amber-50 text-amber-700 border-amber-200",
     Pending: "bg-indigo-50 text-indigo-700 border-indigo-200",
     Active: "bg-emerald-50 text-emerald-700 border-emerald-200",

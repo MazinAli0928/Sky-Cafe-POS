@@ -10,6 +10,7 @@ import MainLayout from "./components/layout/MainLayout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import PosPage from "./pages/PosPage";
+import LiveOrdersPage from "./pages/LiveOrdersPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProductsPage from "./pages/ProductsPage";
 import CategoriesPage from "./pages/CategoriesPage";
@@ -40,6 +41,7 @@ function App() {
                   {/* Any authenticated user */}
                   <Route index element={<DashboardPage />} />
                   <Route path="pos" element={<PosPage />} />
+                  <Route path="live-orders" element={<LiveOrdersPage />} />
                   <Route path="orders" element={<OrdersPage />} />
                   <Route path="reports" element={<ReportsPage />} />
 

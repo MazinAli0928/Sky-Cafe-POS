@@ -24,6 +24,8 @@ class SettingsBase(BaseModel):
     printer_enabled: bool = True
     printer_connection_type: str = "bluetooth_spp"
     printer_name: str = "CIE-DYNO-2F64"
+    table_count: int = 12
+    table_prefix: str = "T-"
 
 class SettingsUpdate(BaseModel):
     cafe_name: Optional[str] = None
@@ -47,6 +49,8 @@ class SettingsUpdate(BaseModel):
     printer_enabled: Optional[bool] = None
     printer_connection_type: Optional[str] = None
     printer_name: Optional[str] = None
+    table_count: Optional[int] = None
+    table_prefix: Optional[str] = None
 
 class SettingsResponse(SettingsBase):
     id: int

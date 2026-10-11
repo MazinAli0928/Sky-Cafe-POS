@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingBag, Receipt, Package, Grid,
-  BarChart3, Settings, LogOut, Coffee, UserCheck, Users, ChevronDown
+  BarChart3, Settings, LogOut, Coffee, UserCheck, Users, ChevronDown, UtensilsCrossed
 } from "lucide-react";
 import { useSettings } from "../../context/SettingsContext";
 import { useAuth } from "../../context/AuthContext";
@@ -11,6 +11,7 @@ import { useToast } from "../../context/ToastContext";
 const ALL_NAV_ITEMS = [
   { label: "Dashboard", path: "/", icon: LayoutDashboard, roles: ["MANAGER", "CASHIER"] },
   { label: "POS", path: "/pos", icon: ShoppingBag, badge: "POS", roles: ["MANAGER", "CASHIER"] },
+  { label: "Live Orders", path: "/live-orders", icon: UtensilsCrossed, badge: "TABLES", roles: ["MANAGER", "CASHIER"] },
   { label: "Orders", path: "/orders", icon: Receipt, roles: ["MANAGER", "CASHIER"] },
   { label: "Products", path: "/products", icon: Package, roles: ["MANAGER"] },
   { label: "Categories", path: "/categories", icon: Grid, roles: ["MANAGER"] },

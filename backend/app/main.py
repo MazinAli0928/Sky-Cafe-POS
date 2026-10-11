@@ -24,6 +24,13 @@ try:
 except Exception as e:
     logging.warning(f"Database seed notice: {e}")
 
+# Run live table orders migration
+try:
+    from app.migrate_live_orders import run as run_live_orders_migration
+    run_live_orders_migration()
+except Exception as e:
+    logging.warning(f"Live orders migration notice: {e}")
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.PROJECT_VERSION,

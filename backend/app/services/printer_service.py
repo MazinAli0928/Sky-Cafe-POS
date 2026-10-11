@@ -478,6 +478,10 @@ class PrinterService:
                 pass
 
         buf += self._text(f"Bill No: #{bill_no}") + CMD_LF
+        table_no   = order.get("table_no") or order.get("tableNo")
+        if table_no:
+            prefix = settings.get("table_prefix", "T-")
+            buf += self._text(f"Table: {prefix}{table_no}") + CMD_LF
         buf += self._text(f"Date: {date_str}") + CMD_LF
         buf += self._text(f"Time: {time_str}") + CMD_LF
         buf += self._text(f"Cashier: {cashier}") + CMD_LF

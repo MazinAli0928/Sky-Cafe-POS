@@ -77,6 +77,14 @@ const ReceiptPreview = ({ order, customWidth }) => {
             <span className="text-slate-500">Bill No:</span>
             <span className="font-bold text-slate-950">#{billNo}</span>
           </div>
+          {(order?.table_no || order?.tableNo) && (
+            <div className="flex justify-between">
+              <span className="text-slate-500">Table:</span>
+              <span className="font-bold text-slate-950">
+                {settings.table_prefix || "T-"}{order?.table_no || order?.tableNo}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-slate-500">Date:</span>
             <span>{date}</span>

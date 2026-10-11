@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Eye, Printer, Search, Filter, RefreshCw } from "lucide-react";
-import { getOrders, cancelOrder, printOrderReceipt } from "../services/api";
+// src/pages/OrdersPage.jsx
+import React, { useState, useEffect, useCallback } from "react";
+import { Search, Printer, Eye, RefreshCw, Filter } from "lucide-react";
 import DataTable from "../components/common/DataTable";
 import StatusBadge from "../components/common/StatusBadge";
 import OrderDetailsModal from "../components/orders/OrderDetailsModal";
@@ -8,7 +8,10 @@ import LoadingState from "../components/common/LoadingState";
 import ErrorState from "../components/common/ErrorState";
 import { useToast } from "../context/ToastContext";
 import { useSettings } from "../context/SettingsContext";
+import { getOrders, printOrderReceipt, cancelOrder } from "../services/api";
 import { printThermalReceipt } from "../services/bluetoothPrinter";
+
+const POLL_INTERVAL_MS = 5000;
 
 const formatDate = (dateStr) => {
   if (!dateStr) return { date: "—", time: "—" };
@@ -24,6 +27,8 @@ const mapServerOrder = (o) => {
   return {
     id: o.id,
     billNo: o.bill_no,
+    tableNo: o.table_no,
+    orderType: o.order_type,
     date,
     time,
     items: (o.items || []).map((i) => ({
@@ -55,25 +60,50 @@ const OrdersPage = () => {
   const { addToast } = useToast();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async (showFullLoader = false) => {
     try {
-      setIsLoading(true);
+      if (showFullLoader) {
+        setIsLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
       setError(null);
       const data = await getOrders();
-      setOrders(data.map(mapServerOrder));
+      // Only include completed / billed orders (exclude active in-progress table drafts)
+      const completedOrders = (data || []).filter(
+        (o) => o.status !== "OPEN" && o.status !== "READY_FOR_CHECKOUT"
+      );
+      setOrders(completedOrders.map(mapServerOrder));
     } catch (err) {
-      setError(err.message);
+      if (showFullLoader) {
+        setError(err.message);
+      }
+      console.error("Failed to load orders:", err);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { loadOrders(); }, []);
+  // Initial load
+  useEffect(() => {
+    loadOrders(true);
+  }, [loadOrders]);
+
+  // Periodic polling for real-time order updates
+  useEffect(() => {
+    const timer = setInterval(() => {
+      loadOrders(false);
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [loadOrders]);
 
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
@@ -89,6 +119,7 @@ const OrdersPage = () => {
       console.warn("Backend print failed, falling back to Web Bluetooth:", err);
       try {
         await printThermalReceipt(order, settings);
+        addToast(`Receipt printed via Bluetooth for Bill #${order.billNo || order.bill_no}`, "success");
       } catch (btErr) {
         addToast(`Print failed: ${err.message}`, "error");
       }
@@ -99,25 +130,43 @@ const OrdersPage = () => {
     try {
       await cancelOrder(orderId);
       addToast(`Order #${orderId} has been cancelled/voided successfully.`, "info");
-      await loadOrders();
+      await loadOrders(false);
     } catch (err) {
       addToast(`Failed to cancel order: ${err.message}`, "error");
     }
   };
 
-  const filteredOrders = orders.filter(
-    (o) =>
-      (o.billNo || "").includes(searchQuery) ||
-      (o.paymentMethod || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (o.date || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredOrders = orders.filter((o) => {
+    // Status filter
+    if (statusFilter !== "ALL" && o.status !== statusFilter) {
+      return false;
+    }
+    // Search query filter
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+
+    return (
+      (o.billNo || "").toLowerCase().includes(query) ||
+      (o.paymentMethod || "").toLowerCase().includes(query) ||
+      (o.cashierName || "").toLowerCase().includes(query) ||
+      (o.date || "").toLowerCase().includes(query) ||
+      (o.tableNo ? `table ${o.tableNo}` : "").toLowerCase().includes(query)
+    );
+  });
 
   const columns = [
     {
       header: "Bill Number",
       accessor: "billNo",
       render: (row) => (
-        <span className="font-extrabold text-amber-600 font-mono text-sm">#{row.billNo}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-extrabold text-amber-600 font-mono text-sm">#{row.billNo}</span>
+          {row.tableNo ? (
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+              T{row.tableNo}
+            </span>
+          ) : null}
+        </div>
       )
     },
     {
@@ -204,22 +253,39 @@ const OrdersPage = () => {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
+          {/* Status Filter Pills */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            {["ALL", "Paid", "Cancelled"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  statusFilter === status
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {status === "ALL" ? "All Orders" : status}
+              </button>
+            ))}
+          </div>
+
           <div className="relative flex-1 sm:w-64">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search bill # or payment..."
+              placeholder="Search bill #, cashier, payment..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-amber-500"
+              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-amber-500 shadow-sm"
             />
           </div>
           <button
-            onClick={loadOrders}
-            title="Refresh"
-            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+            onClick={() => loadOrders(false)}
+            title="Refresh orders"
+            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-amber-500" : ""}`} />
           </button>
         </div>
       </div>
@@ -228,13 +294,13 @@ const OrdersPage = () => {
       {isLoading ? (
         <LoadingState message="Loading orders..." />
       ) : error ? (
-        <ErrorState message={error} onRetry={loadOrders} />
+        <ErrorState message={error} onRetry={() => loadOrders(true)} />
       ) : (
         <DataTable
           columns={columns}
           data={filteredOrders}
           emptyMessage="No Orders Found"
-          emptySubtext="Processed transactions will appear in this history list."
+          emptySubtext="Processed transactions and completed table checkouts will appear in this history list."
         />
       )}
 

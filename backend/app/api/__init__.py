@@ -10,6 +10,8 @@ from app.api.discounts import router as discounts_router
 from app.api.analytics import router as analytics_router
 from app.api.backup import router as backup_router
 from app.api.printer import router as printer_router
+from app.api.tables import router as tables_router
+from app.api.live_orders import router as live_orders_router
 
 api_router = APIRouter()
 api_router.include_router(health_router)
@@ -23,3 +25,5 @@ api_router.include_router(discounts_router)
 api_router.include_router(analytics_router)
 api_router.include_router(backup_router)
 api_router.include_router(printer_router)
+api_router.include_router(tables_router)
+api_router.include_router(live_orders_router)

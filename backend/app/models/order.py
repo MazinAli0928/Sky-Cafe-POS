@@ -25,8 +25,16 @@ class Order(Base):
     tax = Column(Float, nullable=False, default=0.0)
     total = Column(Float, nullable=False, default=0.0)
     payment_method = Column(String(30), nullable=False, default="UPI")
-    status = Column(String(30), nullable=False, default="Paid")
+    status = Column(String(30), nullable=False, default="open")
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Live Table Order extensions
+    table_no = Column(Integer, nullable=True, index=True)
+    order_type = Column(String(20), nullable=False, default="counter") # "counter" | "dine_in"
+    opened_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    opened_by_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    opened_by_name = Column(String(100), nullable=True)
 
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 

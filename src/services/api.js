@@ -175,6 +175,49 @@ export const cancelOrder = (orderId, token) =>
   request(`/orders/${orderId}/cancel`, { method: "POST" }, token);
 
 // ─────────────────────────────────────────────────────────────
+// Tables & Live Orders API
+// ─────────────────────────────────────────────────────────────
+export const getTables = (token) => request("/tables", {}, token);
+
+export const updateTableConfig = (configData, token) =>
+  request("/tables/config", { method: "PUT", body: JSON.stringify(configData) }, token);
+
+export const getLiveOrders = (token) => request("/live-orders", {}, token);
+
+export const getLiveOrder = (orderId, token) =>
+  request(`/live-orders/${orderId}`, {}, token);
+
+export const openTableOrder = (tableNo, token) =>
+  request("/live-orders", { method: "POST", body: JSON.stringify({ table_no: tableNo }) }, token);
+
+export const addItemsToLiveOrder = (orderId, items, token) =>
+  request(`/live-orders/${orderId}/items`, { method: "POST", body: JSON.stringify({ items }) }, token);
+
+export const updateLiveOrderItem = (orderId, itemId, data, token) =>
+  request(`/live-orders/${orderId}/items/${itemId}`, { method: "PATCH", body: JSON.stringify(data) }, token);
+
+export const removeLiveOrderItem = (orderId, itemId, token) =>
+  request(`/live-orders/${orderId}/items/${itemId}`, { method: "DELETE" }, token);
+
+export const updateLiveOrderStatus = (orderId, status, token) =>
+  request(`/live-orders/${orderId}/status`, { method: "PATCH", body: JSON.stringify({ status }) }, token);
+
+export const checkoutLiveOrder = (orderId, payload, token) =>
+  request(`/live-orders/${orderId}/checkout`, { method: "POST", body: JSON.stringify(payload) }, token);
+
+export const cancelLiveOrder = (orderId, payload, token) =>
+  request(`/live-orders/${orderId}/cancel`, { method: "POST", body: JSON.stringify(payload) }, token);
+
+// Aliases for backward compatibility with OrdersPage
+export const getOrder = getLiveOrder;
+export const addOrderItem = (orderId, itemData, token) =>
+  addItemsToLiveOrder(orderId, [itemData], token);
+export const updateOrderItem = updateLiveOrderItem;
+export const removeOrderItem = removeLiveOrderItem;
+export const checkoutOrder = (orderId, token) =>
+  checkoutLiveOrder(orderId, { payment_method: "CASH", tax_rate: 0 }, token);
+
+// ─────────────────────────────────────────────────────────────
 // Analytics & Reports API
 // ─────────────────────────────────────────────────────────────
 export const getDashboardAnalytics = (range = "7days", startDate = null, endDate = null, token = null) => {

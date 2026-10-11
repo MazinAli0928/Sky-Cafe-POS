@@ -8,6 +8,7 @@ class OrderItemCreate(BaseModel):
     quantity: int = Field(..., ge=1)
     unit_price: float = Field(..., ge=0.0)
 
+
 class DiscountInput(BaseModel):
     type: str = Field(..., description="'percentage' or 'fixed'")
     value: float = Field(..., ge=0.0)
@@ -51,7 +52,43 @@ class OrderResponse(BaseModel):
     payment_method: str
     status: str
     created_at: datetime
+    table_no: Optional[int] = None
+    order_type: Optional[str] = "counter"
+    opened_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    opened_by_user_id: Optional[int] = None
+    opened_by_name: Optional[str] = None
     items: List[OrderItemResponse] = []
 
     class Config:
         from_attributes = True
+
+# Schemas for Live Table Orders
+class OpenTableOrderRequest(BaseModel):
+    table_no: int = Field(..., ge=1)
+
+class LiveOrderItemAddRequest(BaseModel):
+    product_id: Optional[int] = None
+    product_name: str = Field(..., min_length=1)
+    quantity: int = Field(1, ge=1)
+    unit_price: float = Field(..., ge=0.0)
+
+class LiveOrderItemsBatchRequest(BaseModel):
+    items: List[LiveOrderItemAddRequest] = Field(..., min_length=1)
+
+class LiveOrderItemUpdateRequest(BaseModel):
+    quantity: int = Field(..., ge=0) # 0 means delete
+
+class LiveOrderStatusUpdateRequest(BaseModel):
+    status: str = Field(..., description="'OPEN' or 'READY_FOR_CHECKOUT'")
+
+class LiveOrderCheckoutRequest(BaseModel):
+    payment_method: str = Field("UPI", description="'CASH', 'UPI', or 'CARD'")
+    discount: Optional[DiscountInput] = None
+    tax_rate: float = Field(0.0, ge=0.0)
+
+class LiveOrderCancelRequest(BaseModel):
+    reason: Optional[str] = "Customer left / cancelled order"
+    manager_username: Optional[str] = None
+    manager_password: Optional[str] = None
+

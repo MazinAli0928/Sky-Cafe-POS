@@ -188,12 +188,13 @@ const OrderDetailsModal = ({ isOpen, onClose, order, onCancelOrder }) => {
               Close
             </button>
             <button
-              onClick={handlePrintAgain}
-              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/20 flex items-center gap-2 transition-colors"
+                onClick={handlePrintAgain}
+                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/20 flex items-center gap-2 transition-colors"
             >
-              <Printer className="w-4 h-4 stroke-[2.5]" />
-              <span>Print Again</span>
+                <Printer className="w-4 h-4 stroke-[2.5]" />
+                <span>Print Again</span>
             </button>
+
           </div>
         </div>
       </Modal>

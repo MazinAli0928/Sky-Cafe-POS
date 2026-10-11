@@ -58,6 +58,8 @@ def _order_dict(o: Order) -> dict:
         "total": o.total,
         "payment_method": o.payment_method,
         "status": o.status,
+        "table_no": o.table_no,
+        "order_type": getattr(o, "order_type", "counter"),
         "created_at": o.created_at.isoformat() if o.created_at else "",
         "items": [
             {
